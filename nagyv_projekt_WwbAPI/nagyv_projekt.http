@@ -1,0 +1,6 @@
+@nagyv_projekt_HostAddress = http://localhost:5169
+
+GET {{nagyv_projekt_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
