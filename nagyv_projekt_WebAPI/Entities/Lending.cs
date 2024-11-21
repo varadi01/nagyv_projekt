@@ -4,11 +4,12 @@ using Microsoft.VisualBasic.CompilerServices;
 
 namespace nagyv_projekt.Entities;
 
+[Table("lending")]
 public class Lending
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public Guid id {get; set;}
+    public Guid Id {get; set;}
     
     [Required]
     public Guid ReaderId {get; set;}

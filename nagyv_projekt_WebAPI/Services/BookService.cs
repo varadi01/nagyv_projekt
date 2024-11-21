@@ -28,7 +28,7 @@ public class BookService : IBookService
 
     public async Task<Books> GetBookByIdAsync(Guid id)
     {
-        return await _context.Books.FindAsync(id) ?? throw new InvalidOperationException(); //TODO
+        return await _context.Books.FindAsync(id);
     }
 
     public async Task<List<Books>> GetBooksByAuthorAsync(string author)

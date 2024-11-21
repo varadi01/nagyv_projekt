@@ -16,7 +16,7 @@ public class LendingService : ILendingService
     }
 
 
-    public async Task LendBookAsync(Guid bookId, Guid readerId, int leasePeriod)
+    public async Task LendBookAsync(Guid bookId, Guid readerId, DateOnly returnDate)
     {
         _logger.LogInformation("Adding lending to database");
 
@@ -28,7 +28,7 @@ public class LendingService : ILendingService
         
         var lending = new Lending {ReaderId = readerId, BookId = bookId,
             LendingDate = DateOnly.FromDateTime(DateTime.UtcNow),
-            ReturnDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(leasePeriod))};
+            ReturnDate = returnDate};
         
         await _context.Lending.AddAsync(lending);
         await _context.SaveChangesAsync();
@@ -43,7 +43,7 @@ public class LendingService : ILendingService
     {
         var lendings = await _context.Lending.ToListAsync();
         var booksLentToReader = lendings.Where(l => l.ReaderId == readerId)
-            .Select((l) => l.BookId);
+            .Select((l) => l.BookId).ToList();
         
         var books = await _context.Books.ToListAsync();
 
@@ -52,17 +52,16 @@ public class LendingService : ILendingService
 
     public async Task UpdateLendingAsync(Lending lending)
     {
-        _logger.LogInformation($"Updating lending {lending.id} in database");
+        _logger.LogInformation($"Updating lending {lending.Id} in database");
         
-        var lendingToUpdate = await _context.Lending.FindAsync(lending.id);
+        var lendingToUpdate = await _context.Lending.FindAsync(lending.Id);
 
         if (lendingToUpdate == null)
         {
-            _logger.LogWarning($"Could not find lending with id {lending.id}");
-            throw new InvalidOperationException($"Lending with id {lending.id} was not found");
+            _logger.LogWarning($"Could not find lending with id {lending.Id}");
+            throw new InvalidOperationException($"Lending with id {lending.Id} was not found");
         }
         
-        lendingToUpdate.LendingDate = lending.LendingDate;
         lendingToUpdate.ReturnDate = lending.ReturnDate;
         
         await _context.SaveChangesAsync();

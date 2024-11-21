@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace nagyv_projekt.Entities;
 
+[Table("books")]
 public class Books
 {
     [Key]

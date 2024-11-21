@@ -33,40 +33,26 @@ public class ReaderService : IReaderService
 
     public async Task<Readers> GetReaderByIdAsync(Guid id)
     {
-        return await _appDbContext.Readers.FindAsync(id) ?? throw new InvalidOperationException(); //TODO EXCEPTION
+        return await _appDbContext.Readers.FindAsync(id); //TODO EXCEPTION
     }
 
     //TODO maybe make this just one method?
-    public async Task UpdateReaderAddressAsync(Guid id, string address)
+    public async Task UpdateReaderAsync(Readers reader)
     {
-        _logger.LogInformation($"Updating reader {id}'s address {address}");
+        _logger.LogInformation($"Updating reader {reader.ReaderId}");
         
-        var reader = await _appDbContext.Readers.FindAsync(id);
+        var existingReader = await _appDbContext.Readers.FindAsync(reader.ReaderId);
 
-        if (reader == null)
+        if (existingReader == null)
         {
             throw new InvalidOperationException(); //TODO EX
         }
         
-        reader.Address = address;
+        existingReader.Name = reader.Name;
+        existingReader.Address = reader.Address;
         await _appDbContext.SaveChangesAsync();
     }
-
-    public async Task UpdateReaderNameAsync(Guid id, string name)
-    {
-        _logger.LogInformation($"Updating reader {name} in database");
-        
-        var reader = await _appDbContext.Readers.FindAsync(id);
-
-        if (reader == null)
-        {
-            _logger.LogWarning($"Reader with id {id} not found");
-            throw new InvalidOperationException(); //TODO EX
-        }
-        
-        reader.Name = name;
-        await _appDbContext.SaveChangesAsync();
-    }
+    
 
     public async Task DeleteReaderAsync(Guid id)
     {
