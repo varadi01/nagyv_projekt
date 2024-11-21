@@ -7,7 +7,7 @@ public class Books
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public Guid AccessionNumber { get; set; }
+    public Guid BookID { get; set; }
     
     [Required]
     public string Title { get; set; }

@@ -14,7 +14,7 @@ public class Lending
     public Guid ReaderId {get; set;}
     
     [Required]
-    public Guid AccessionNumber {get; set;}
+    public Guid BookId {get; set;}
     
     [Required] //TODO
     public DateOnly LendingDate {get; set;}
