@@ -1,0 +1,205 @@
+@page "/borrowings"
+
+
+
+@inject HttpClient Http
+
+<PageTitle>Readers</PageTitle>
+
+<h1>Manage Readers</h1>
+
+<div>
+    <div>
+        <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">Add new book</Button>
+        <Modal @ref="saveModal" title="Add new reader" IsVerticallyCentered="true">
+            <BodyTemplate>
+                <form>
+                    <label>Full name</label><br/>
+                    <InputText @bind-Value="@_readerGuidString"></InputText>
+                    <br/>
+                    <label>Address</label><br/>
+                    <InputText @bind-Value="@_bookGuidString"></InputText>
+                    <br/>
+                    <label>Birth date</label><br/>
+                    <InputDate  @bind-Value="@_cBorrowing.LendingDate" Min="@_epoch.ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <br/>
+                    <label>Birth date</label><br/>
+                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@_epoch.ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <br/>
+                </form>
+            </BodyTemplate>
+            <FooterTemplate>
+                <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                <Button Color="ButtonColor.Primary" @onclick="SaveLending">Save</Button>
+            </FooterTemplate>
+        </Modal>
+        <Modal @ref="editModal" title="Update reader" IsVerticallyCentered="true">
+            <BodyTemplate>
+                <form>
+                    <label>Birth date</label><br/>
+                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@_epoch.ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <br/>
+                </form>
+            </BodyTemplate>
+            <FooterTemplate>
+                <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                <Button Color="ButtonColor.Primary" @onclick="EditLending">Update</Button>
+            </FooterTemplate>
+        </Modal>
+
+    </div>
+    <div>
+        <InputText @bind-Value="@_searchString"></InputText>
+        <Button Color="ButtonColor.Primary" @onclick="fetchReaders">List Readers</Button>
+
+    </div>
+    <div>
+        @if (borrowings is { Count: 0 })
+        {
+            <p>
+                Found lendings are listed here!
+            </p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Reader</th>
+                    <th>Book</th>
+                    <th>Lending date</th>
+                    <th>Return date</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var b in borrowings)
+                {
+                    <tr>
+                        <td>@b.ReaderId</td>
+                        <td>@b.BookId</td>
+                        <td>@b.LendingDate.ToShortDateString()</td>
+                        <td>@b.ReturnDate.ToShortDateString()</td>
+                        <td>
+                            <Button Color="ButtonColor.Success" @onclick="@((() =>
+                                                                          {
+                                                                              _eBorrowing.Id = b.Id;
+                                                                              OnShowEditModalClick();
+                                                                          }))">
+                                Update
+                            </Button>
+                            <Button Color="ButtonColor.Danger" @onclick="@(() => RemoveReader(b))">Remove</Button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code
+
+{
+    [Inject] ModalService ModalService { get; set; } = default!;
+
+    private DateTime _epoch = new DateTime( 1900, 1, 1, 0, 0, 0, DateTimeKind.Utc );
+
+    private string? _searchString = "";
+
+    private string? _readerGuidString;
+    private string? _bookGuidString;
+
+    private BorrowingUITO _cBorrowing = new BorrowingUITO();
+    private Modal saveModal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await saveModal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await saveModal.HideAsync();
+    }
+
+    //make this dataannotated?
+    public class BorrowingUITO
+    {
+        public Guid Id {get; set;}
+
+        public Guid ReaderId {get; set;}
+
+        public Guid BookId {get; set;}
+
+        public DateOnly LendingDate {get; set;}
+        
+        public DateOnly ReturnDate {get; set;}
+    }
+
+    private async void SaveLending()
+    {
+        Guid.TryParse(_readerGuidString, out var rid);
+        _cBorrowing.ReaderId = rid;
+
+        Guid.TryParse(_readerGuidString, out var bid);
+        _cBorrowing.BookId = bid;
+
+        await Http.PostAsJsonAsync("http://localhost:5169/lending/lend", _cBorrowing);
+        await OnHideModalClick();
+    }
+
+    private BorrowingUITO _eBorrowing = new BorrowingUITO();
+    private Modal editModal = default!;
+
+    private async Task OnShowEditModalClick()
+    {
+        await editModal.ShowAsync();
+    }
+
+    private async Task OnHideEditModalClick()
+    {
+        await editModal.HideAsync();
+    }
+
+    private async void EditLending()
+    {
+        await Http.PutAsJsonAsync("http://localhost:5169/lending/update", _eBorrowing);
+        await OnHideEditModalClick();
+    }
+
+    private List<BorrowingUITO>? borrowings = new();
+
+    private async void fetchReaders()
+    {
+        if (_searchString == "")
+        {
+            var foundLendings = await Http.GetFromJsonAsync<List<BorrowingUITO>>("http://localhost:5169/lending/getAll");
+            if (foundLendings != null && foundLendings.Any())
+            {
+                borrowings = foundLendings;
+            }
+            else
+            {
+                borrowings = [];
+            }
+        }
+        else
+        {
+            var foundLendings = await Http.GetFromJsonAsync<List<BorrowingUITO>>($"http://localhost:5169/lending/get/" + _searchString);
+            if (foundLendings != null && foundLendings.Any())
+            {
+                borrowings = foundLendings;
+            }
+            else
+            {
+                borrowings = [];
+            }
+        }
+    }
+
+    private async void RemoveReader(BorrowingUITO reader)
+    {
+        await Http.DeleteAsync("http://localhost:5169/lending/delete/" + reader.Id);
+    }
+}

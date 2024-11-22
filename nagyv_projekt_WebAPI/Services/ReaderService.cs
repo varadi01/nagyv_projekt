@@ -31,6 +31,12 @@ public class ReaderService : IReaderService
         return await _appDbContext.Readers.ToListAsync();
     }
 
+    public async Task<List<Readers>> GetAllReadersByNameAsync(string name)
+    {
+        return await _appDbContext.Readers.Where(r => r.Name.Contains(name)).ToListAsync();
+        
+    }
+
     public async Task<Readers> GetReaderByIdAsync(Guid id)
     {
         return await _appDbContext.Readers.FindAsync(id); //TODO EXCEPTION

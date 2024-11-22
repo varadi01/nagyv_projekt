@@ -26,7 +26,23 @@ public class ReaderController : ControllerBase
     [HttpGet("getAll")]
     public async Task<IActionResult> GetAllReaders()
     {
-        return Ok(await _readerService.GetAllReadersAsync());
+        var readers = await _readerService.GetAllReadersAsync();
+        if (readers == null)
+        {
+            return Ok();
+        }
+        return Ok(readers);
+    }
+
+    [HttpGet("getByName/{name}")]
+    public async Task<IActionResult> GetReadersByName([FromRoute] string name)
+    {
+        var readers = await _readerService.GetAllReadersByNameAsync(name);
+        if (readers == null)
+        {
+            return Ok();
+        }
+        return Ok(readers);
     }
 
     [HttpGet("getById/{id}")]

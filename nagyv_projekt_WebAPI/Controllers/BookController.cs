@@ -23,6 +23,20 @@ public class BookController : ControllerBase
         return Ok();
     }
 
+    [HttpGet("getAll")]
+    public async Task<IActionResult> GetAllBooks()
+    {
+        var books = await _bookService.GetAllBooksAsync();
+        return Ok(books);
+    }
+
+    [HttpGet("getByTitle/{title}")]
+    public async Task<IActionResult> GetBookByTitle(string title)
+    {
+        var books = await _bookService.GetBooksByTitleAsync(title);
+        return Ok(books);
+    }
+
     [HttpGet("getByAuthor/{author}")]
     public async Task<IActionResult> GetBooksByAuthor(string author)
     {

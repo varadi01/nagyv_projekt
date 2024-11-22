@@ -1,0 +1,248 @@
+@page "/books"
+@using System.ComponentModel.DataAnnotations
+@using System.Net
+
+@inject HttpClient Http
+
+
+<PageTitle>Books</PageTitle>
+
+<h1>Manage Books</h1>
+
+<div>
+    <div>
+        <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">Add new book</Button>
+        <Modal @ref="saveModal" title="Add new book" IsVerticallyCentered="true">
+            <BodyTemplate>
+                <form>
+                    <label>Title</label><br/>
+                    <InputText @bind-Value="@_cBook.Title"></InputText>
+                    <br/>
+                    <label>Author</label><br/>
+                    <InputText @bind-Value="@_cBook.Author"></InputText>
+                    <br/>
+                    <label>Year of publishing</label><br/>
+                    <InputNumber TValue="int" @bind-Value="@_cBook.Year" Min="0"></InputNumber>
+                    <br/>
+                    <label>Publisher</label><br/>
+                    <InputText @bind-Value="@_cBook.Publisher"></InputText>
+                    <br/>
+                </form>
+            </BodyTemplate>
+            <FooterTemplate>
+                <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                <Button Color="ButtonColor.Primary" @onclick="SaveBook">Save</Button>
+            </FooterTemplate>
+        </Modal>
+        <Modal @ref="editModal" title="Update book" IsVerticallyCentered="true">
+            <BodyTemplate>
+                <form>
+                    <label>Title</label><br/>
+                    <InputText @bind-Value="@_eBook.Title"></InputText>
+                    <br/>
+                    <label>Author</label><br/>
+                    <InputText @bind-Value="@_eBook.Author"></InputText>
+                    <br/>
+                    <label>Year of publishing</label><br/>
+                    <InputNumber TValue="int" @bind-Value="@_eBook.Year" Min="0"></InputNumber>
+                    <br/>
+                    <label>Publisher</label><br/>
+                    <InputText @bind-Value="@_eBook.Publisher"></InputText>
+                    <br/>
+                </form>
+            </BodyTemplate>
+            <FooterTemplate>
+                <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                <Button Color="ButtonColor.Primary" @onclick="EditBook">Update</Button>
+            </FooterTemplate>
+        </Modal>
+
+    </div>
+    <div>
+        <InputText @bind-Value="@_searchString"></InputText>
+        <Button Color="ButtonColor.Primary" @onclick="fetchBooksWithParameters">List Books</Button>
+        <Dropdown Color="DropdownColor.Info">
+            <DropdownToggleButton>Filter By</DropdownToggleButton>
+            <DropdownMenu>
+                <DropdownItem Type="DropdownItemType.Button" @onclick="@(() => _filterMode = FilterMode.NONE)">None
+                </DropdownItem>
+                <DropdownItem Type="DropdownItemType.Button" @onclick="@(() => _filterMode = FilterMode.TITLE)">Title
+                </DropdownItem>
+                <DropdownItem Type="DropdownItemType.Button" @onclick="@(() => _filterMode = FilterMode.AUTHOR)">
+                    Author
+                </DropdownItem>
+                <DropdownItem To="#" Type="DropdownItemType.Button" @onclick="@(() => _filterMode = FilterMode.YEAR)">
+                    Year
+                </DropdownItem>
+                <DropdownItem Type="DropdownItemType.Button" @onclick="@(() => _filterMode = FilterMode.PUBLISHER)">
+                    Publisher
+                </DropdownItem>
+            </DropdownMenu>
+        </Dropdown>
+    </div>
+    <div>
+        @if (books.Count == 0)
+        {
+            <p>
+                Select which books to display!
+            </p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Guid</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Year published</th>
+                    <th>Publisher</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var b in books)
+                {
+                    <tr>
+                        <td>@b.BookID</td>
+                        <td>@b.Title</td>
+                        <td>@b.Author</td>
+                        <td>@b.Year</td>
+                        <td>@b.Publisher</td>
+                        <td>
+                            <Button Color="ButtonColor.Success" @onclick="@((() =>
+                                                                          {
+                                                                              _eBook.BookID = b.BookID;
+                                                                              OnShowEditModalClick();
+                                                                          }))">
+                                Edit
+                            </Button>
+                            <Button Color="ButtonColor.Info">Lend</Button> //TODO
+                            <Button Color="ButtonColor.Danger" @onclick="@(() => RemoveBook(b))">Remove</Button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code
+
+{
+    [Inject] ModalService ModalService { get; set; } = default!;
+
+    private enum FilterMode
+    {
+        NONE,
+        TITLE,
+        AUTHOR,
+        YEAR,
+        PUBLISHER
+    }
+
+    private string? _searchString = "";
+    private FilterMode _filterMode = FilterMode.NONE;
+
+    private BookUITO _cBook = new BookUITO();
+    private Modal saveModal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await saveModal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await saveModal.HideAsync();
+    }
+
+    private class BookUITO
+    {
+        public Guid BookID { get; set; }
+
+        public string Title { get; set; }
+
+        public string Author { get; set; }
+
+        public string Publisher { get; set; }
+
+        public int Year { get; set; }
+    }
+
+    private async void SaveBook()
+    {
+        await Http.PostAsJsonAsync("http://localhost:5169/books/add", _cBook);
+        await OnHideModalClick();
+    }
+
+    private BookUITO _eBook = new BookUITO();
+    private Modal editModal = default!;
+
+    private async Task OnShowEditModalClick()
+    {
+        await editModal.ShowAsync();
+    }
+
+    private async Task OnHideEditModalClick()
+    {
+        await editModal.HideAsync();
+    }
+
+    private async void EditBook()
+    {
+        await Http.PutAsJsonAsync("http://localhost:5169/books/update", _eBook);
+        await OnHideEditModalClick();
+    }
+
+    private List<BookUITO>? books = new();
+
+    private async void fetchBooksWithParameters()
+    {
+        switch (_filterMode)
+        {
+            case FilterMode.NONE:
+                books = await Http.GetFromJsonAsync<List<BookUITO>>("http://localhost:5169/books/getAll");
+                break;
+            case FilterMode.TITLE:
+                if (_searchString == "")
+                {
+                    return;
+                }
+
+                books = await Http.GetFromJsonAsync<List<BookUITO>>("http://localhost:5169/books/getByTitle/" + _searchString);
+                break;
+            case FilterMode.AUTHOR:
+                if (_searchString == "")
+                {
+                    return;
+                }
+
+                books = await Http.GetFromJsonAsync<List<BookUITO>>("http://localhost:5169/books/getByAuthor/" + _searchString);
+                break;
+            case FilterMode.YEAR:
+                if (_searchString == "")
+                {
+                    return;
+                }
+
+                if (int.TryParse(_searchString, out _))
+                    books = await Http.GetFromJsonAsync<List<BookUITO>>("http://localhost:5169/books/getByYear/" + _searchString);
+                break;
+            case FilterMode.PUBLISHER:
+                if (_searchString == "")
+                {
+                    return;
+                }
+
+                books = await Http.GetFromJsonAsync<List<BookUITO>>("http://localhost:5169/books/getByPublisher/" + _searchString);
+                break;
+        }
+    }
+
+    private async void RemoveBook(BookUITO book)
+    {
+        await Http.DeleteAsync("http://localhost:5169/books/delete/" + book.BookID);
+    }
+}

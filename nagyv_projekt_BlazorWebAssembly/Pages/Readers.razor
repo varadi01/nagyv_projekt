@@ -1,0 +1,197 @@
+@page "/readers"
+
+
+@inject HttpClient Http
+
+<PageTitle>Readers</PageTitle>
+
+<h1>Manage Readers</h1>
+
+<div>
+    <div>
+        <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">Add new book</Button>
+        <Modal @ref="saveModal" title="Add new reader" IsVerticallyCentered="true">
+            <BodyTemplate>
+                <form>
+                    <label>Full name</label><br/>
+                    <InputText @bind-Value="@_cReader.Name"></InputText>
+                    <br/>
+                    <label>Address</label><br/>
+                    <InputText @bind-Value="@_cReader.Address"></InputText>
+                    <br/>
+                    <label>Birth date</label><br/>
+                    <InputDate  @bind-Value="@_cReader.BirthDate" Min="@_epoch.ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <br/>
+                </form>
+            </BodyTemplate>
+            <FooterTemplate>
+                <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                <Button Color="ButtonColor.Primary" @onclick="SaveReader">Save</Button>
+            </FooterTemplate>
+        </Modal>
+        <Modal @ref="editModal" title="Update reader" IsVerticallyCentered="true">
+            <BodyTemplate>
+                <form>
+                    <label>Full name</label><br/>
+                    <InputText @bind-Value="@_eReader.Name"></InputText>
+                    <br/>
+                    <label>Address</label><br/>
+                    <InputText @bind-Value="@_eReader.Address"></InputText>
+                    <br/>
+                </form>
+            </BodyTemplate>
+            <FooterTemplate>
+                <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                <Button Color="ButtonColor.Primary" @onclick="EditReader">Update</Button>
+
+            </FooterTemplate>
+        </Modal>
+
+    </div>
+    <div>
+        <InputText @bind-Value="@_searchString"></InputText>
+        <Button Color="ButtonColor.Primary" @onclick="fetchReaders">List Readers</Button>
+
+    </div>
+    <div>
+        @if (readers is { Count: 0 })
+        {
+            <p>
+                Found readers are listed here!
+            </p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Guid</th>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Birth date</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var r in readers)
+                {
+                    <tr>
+                        <td>@r.ReaderId</td>
+                        <td>@r.Name</td>
+                        <td>@r.Address</td>
+                        <td>@r.BirthDate.ToShortDateString()</td>
+                        <td>
+                            <Button Color="ButtonColor.Success" @onclick="@((() =>
+                                                                          {
+                                                                              _eReader.ReaderId = r.ReaderId;
+                                                                              OnShowEditModalClick();
+                                                                          }))">
+                                Update
+                            </Button>
+                            <Button Color="ButtonColor.Info">See borrowed books</Button> //TODO
+                            <Button Color="ButtonColor.Danger" @onclick="@(() => RemoveReader(r))">Remove</Button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code
+
+{
+    [Inject] ModalService ModalService { get; set; } = default!;
+
+    private DateTime _epoch = new DateTime( 1900, 1, 1, 0, 0, 0, DateTimeKind.Utc );
+
+    private string? _searchString = "";
+
+    private ReaderUITO _cReader = new ReaderUITO();
+    private Modal saveModal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await saveModal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await saveModal.HideAsync();
+    }
+
+    //make this dataannotated?
+    private class ReaderUITO
+    {
+        public Guid ReaderId { get; set; }
+        
+        public string Name { get; set; }
+        
+        public string Address { get; set; }
+        
+        public DateOnly BirthDate { get; set; }
+
+        public ICollection<Borrowings.BorrowingUITO> Lendings { get; set; } = new List<Borrowings.BorrowingUITO>(); //temporary?
+    }
+
+    private async void SaveReader()
+    {
+        await Http.PostAsJsonAsync("http://localhost:5169/reader/add", _cReader); 
+        await OnHideModalClick();
+    }
+
+    private ReaderUITO _eReader = new ReaderUITO();
+    private Modal editModal = default!;
+
+    private async Task OnShowEditModalClick()
+    {
+        await editModal.ShowAsync();
+    }
+
+    private async Task OnHideEditModalClick()
+    {
+        await editModal.HideAsync();
+    }
+
+    private async void EditReader()
+    {
+        await Http.PutAsJsonAsync("http://localhost:5169/reader/update", _eReader); 
+        await OnHideEditModalClick();
+    }
+
+    private List<ReaderUITO>? readers = new();
+    
+    private async void fetchReaders()
+    {
+        if (_searchString == "")
+        {
+            var foundReader = await Http.GetFromJsonAsync<List<ReaderUITO>>("http://localhost:5169/reader/getAll");
+            if (foundReader != null && foundReader.Any())
+            {
+                readers = foundReader;
+            }
+            else
+            {
+                readers = [];
+            }
+        }
+        else
+        {
+            var foundReaders = await Http.GetFromJsonAsync<List<ReaderUITO>>($"http://localhost:5169/reader/getByName/" + _searchString);
+            if (foundReaders != null && foundReaders.Any())
+            {
+                readers = foundReaders;
+            }
+            else
+            {
+                readers = [];
+            }
+        }
+    }
+    
+    private async void RemoveReader(ReaderUITO reader)
+    {
+        await Http.DeleteAsync("http://localhost:5169/reader/delete/" + reader.ReaderId); 
+    }
+}

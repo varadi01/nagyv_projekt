@@ -10,18 +10,20 @@
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            <NavLink class="nav-link" href="books" Match="NavLinkMatch.All">
+                <span aria-hidden="true"><Icon Name="IconName.Book" Size="IconSize.x2"></Icon> Books</span> 
             </NavLink>
         </div>
+
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            <NavLink class="nav-link" href="readers">
+                <span aria-hidden="true"><Icon Name="IconName.Person" Size="IconSize.x2"></Icon> Readers</span>
             </NavLink>
         </div>
+
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+            <NavLink class="nav-link" href="borrowings">
+                <span aria-hidden="true"><Icon Name="IconName.Arrows" Size="IconSize.x2"></Icon> Borrowings</span>
             </NavLink>
         </div>
     </nav>
