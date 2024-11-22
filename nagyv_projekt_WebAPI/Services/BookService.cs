@@ -31,6 +31,16 @@ public class BookService : IBookService
         return await _context.Books.FindAsync(id);
     }
 
+    public async Task<List<Books>> GetAllBooksAsync()
+    {
+        return await _context.Books.ToListAsync();
+    }
+
+    public async Task<List<Books>> GetBooksByTitleAsync(string title)
+    {
+        return await _context.Books.Where(b => b.Title.Contains(title)).ToListAsync();
+    }
+
     public async Task<List<Books>> GetBooksByAuthorAsync(string author)
     {
         var books = await _context.Books.ToListAsync();

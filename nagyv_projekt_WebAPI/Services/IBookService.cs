@@ -8,6 +8,10 @@ public interface IBookService
     
     Task<Books> GetBookByIdAsync(Guid id);
     
+    Task<List<Books>> GetAllBooksAsync();
+    
+    Task<List<Books>> GetBooksByTitleAsync(string title);
+    
     Task<List<Books>> GetBooksByAuthorAsync(string author);
     
     Task<List<Books>> GetBooksByPublisherAsync(string publisher);
