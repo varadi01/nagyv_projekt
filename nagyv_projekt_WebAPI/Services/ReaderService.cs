@@ -33,7 +33,7 @@ public class ReaderService : IReaderService
 
     public async Task<List<Readers>> GetAllReadersByNameAsync(string name)
     {
-        return await _appDbContext.Readers.Where(r => r.Name.Contains(name)).ToListAsync();
+        return await _appDbContext.Readers.Where(r => r.Name.ToLower().Contains(name.ToLower())).ToListAsync();
         
     }
 
