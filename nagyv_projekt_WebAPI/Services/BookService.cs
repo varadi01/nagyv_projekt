@@ -45,14 +45,14 @@ public class BookService : IBookService
     {
         var books = await _context.Books.ToListAsync();
         
-        return books.Where(b => b.Author == author).ToList();
+        return books.Where(b => b.Author.Contains(author)).ToList();
     }
 
     public async Task<List<Books>> GetBooksByPublisherAsync(string publisher)
     {
         var books = await _context.Books.ToListAsync();
         
-        return books.Where(b => b.Publisher == publisher).ToList();
+        return books.Where(b => b.Publisher.Contains(publisher)).ToList();
     }
 
     public async Task<List<Books>> GetBooksByYearAsync(int year)
