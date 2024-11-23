@@ -9,7 +9,7 @@
 
 <div>
     <div>
-        <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">Add new book</Button>
+        <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">Add new reader</Button>
         <Modal @ref="saveModal" title="Add new reader" IsVerticallyCentered="true">
             <BodyTemplate>
                 <form>
@@ -56,16 +56,25 @@
     <div>
         @if (readers is { Count: 0 })
         {
-            <p>
-                Found readers are listed here!
-            </p>
+            if (_searchString != "")
+            {
+                <p>
+                    No readers found with that name.
+                </p>
+            }
+            else
+            {
+                <p>
+                    Use "List Readers" to list all readers with names matching the specified string.
+                </p>
+            }
         }
         else
         {
             <table class="table">
                 <thead>
                 <tr>
-                    <th>Guid</th>
+                    <th>Reader ID</th>
                     <th>Name</th>
                     <th>Address</th>
                     <th>Birth date</th>
@@ -84,6 +93,7 @@
                             <Button Color="ButtonColor.Success" @onclick="@((() =>
                                                                           {
                                                                               _eReader.ReaderId = r.ReaderId;
+                                                                              _eReader.BirthDate = r.BirthDate;
                                                                               OnShowEditModalClick();
                                                                           }))">
                                 Update
@@ -139,6 +149,7 @@
     {
         await Http.PostAsJsonAsync("http://localhost:5169/reader/add", _cReader); 
         await OnHideModalClick();
+        _cReader = new ReaderUITO();
     }
 
     private ReaderUITO _eReader = new ReaderUITO();
@@ -158,6 +169,7 @@
     {
         await Http.PutAsJsonAsync("http://localhost:5169/reader/update", _eReader); 
         await OnHideEditModalClick();
+        _eReader = new ReaderUITO();
     }
 
     private List<ReaderUITO>? readers = new();

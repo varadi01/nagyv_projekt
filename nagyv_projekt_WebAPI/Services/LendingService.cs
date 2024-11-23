@@ -27,7 +27,7 @@ public class LendingService : ILendingService
         }
         
         var lending = new Lending {ReaderId = readerId, BookId = bookId,
-            LendingDate = DateOnly.FromDateTime(DateTime.UtcNow),
+            LendingDate = DateOnly.FromDateTime(DateTime.UtcNow),  //TODO, we specify this
             ReturnDate = returnDate};
         
         await _context.Lending.AddAsync(lending);

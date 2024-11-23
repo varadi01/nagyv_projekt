@@ -83,16 +83,25 @@
     <div>
         @if (books.Count == 0)
         {
-            <p>
-                Select which books to display!
-            </p>
+            if (_filterMode != FilterMode.NONE)
+            {
+                <p>
+                    No books found with specified filters.
+                </p>
+            }
+            else
+            {
+                <p>
+                    Use "List Books" to list all books matching specified filters.
+                </p>
+            }
         }
         else
         {
             <table class="table">
                 <thead>
                 <tr>
-                    <th>Guid</th>
+                    <th>Accession ID</th>
                     <th>Title</th>
                     <th>Author</th>
                     <th>Year published</th>
@@ -175,6 +184,7 @@
     {
         await Http.PostAsJsonAsync("http://localhost:5169/books/add", _cBook);
         await OnHideModalClick();
+        _cBook = new BookUITO();
     }
 
     private BookUITO _eBook = new BookUITO();
@@ -194,6 +204,7 @@
     {
         await Http.PutAsJsonAsync("http://localhost:5169/books/update", _eBook);
         await OnHideEditModalClick();
+        _eBook = new BookUITO();
     }
 
     private List<BookUITO>? books = new();

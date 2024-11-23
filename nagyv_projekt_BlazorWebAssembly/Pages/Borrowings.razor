@@ -4,26 +4,26 @@
 
 @inject HttpClient Http
 
-<PageTitle>Readers</PageTitle>
+<PageTitle>Lendings</PageTitle>
 
-<h1>Manage Readers</h1>
-
+<h1>Manage lendings</h1>
+//3fa85f64-5717-4562-b3fc-2c963f66afa6 01935059-7179-7af4-8f88-a912c7d01878
 <div>
     <div>
-        <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">Add new book</Button>
+        <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">Add new lending</Button>
         <Modal @ref="saveModal" title="Add new reader" IsVerticallyCentered="true">
             <BodyTemplate>
                 <form>
-                    <label>Full name</label><br/>
+                    <label>Reader ID</label><br/>
                     <InputText @bind-Value="@_readerGuidString"></InputText>
                     <br/>
-                    <label>Address</label><br/>
+                    <label>Book Accession ID</label><br/>
                     <InputText @bind-Value="@_bookGuidString"></InputText>
                     <br/>
-                    <label>Birth date</label><br/>
+                    <label>Lending date</label><br/>
                     <InputDate  @bind-Value="@_cBorrowing.LendingDate" Min="@_epoch.ToString("yyyy-MM-dd")" ></InputDate> //TODO
                     <br/>
-                    <label>Birth date</label><br/>
+                    <label>Return date</label><br/>
                     <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@_epoch.ToString("yyyy-MM-dd")" ></InputDate> //TODO
                     <br/>
                 </form>
@@ -36,7 +36,7 @@
         <Modal @ref="editModal" title="Update reader" IsVerticallyCentered="true">
             <BodyTemplate>
                 <form>
-                    <label>Birth date</label><br/>
+                    <label>Return date</label><br/>
                     <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@_epoch.ToString("yyyy-MM-dd")" ></InputDate> //TODO
                     <br/>
                 </form>
@@ -50,15 +50,20 @@
     </div>
     <div>
         <InputText @bind-Value="@_searchString"></InputText>
-        <Button Color="ButtonColor.Primary" @onclick="fetchReaders">List Readers</Button>
+        <Button Color="ButtonColor.Primary" @onclick="fetchLendings">List lendings</Button>
 
     </div>
     <div>
         @if (borrowings is { Count: 0 })
         {
-            <p>
-                Found lendings are listed here!
-            </p>
+            if (_searchString != "")
+            {
+                <p>Specified reader has no lendings, or does not exist</p>
+            }
+            else
+            {
+                <p>Use "List lendings" to see all lendings, or specify a reader ID to see that readers lendings</p>
+            }
         }
         else
         {
@@ -164,13 +169,14 @@
 
     private async void EditLending()
     {
+        //TODO resets to 0001 for some reason
         await Http.PutAsJsonAsync("http://localhost:5169/lending/update", _eBorrowing);
         await OnHideEditModalClick();
     }
 
     private List<BorrowingUITO>? borrowings = new();
 
-    private async void fetchReaders()
+    private async void fetchLendings()
     {
         if (_searchString == "")
         {
@@ -186,6 +192,8 @@
         }
         else
         {
+            //TODO if _searchString cant be parsed into a proper guid we oof
+            //TODO this doesent work on mutiple levels
             var foundLendings = await Http.GetFromJsonAsync<List<BorrowingUITO>>($"http://localhost:5169/lending/get/" + _searchString);
             if (foundLendings != null && foundLendings.Any())
             {
@@ -198,8 +206,8 @@
         }
     }
 
-    private async void RemoveReader(BorrowingUITO reader)
+    private async void RemoveReader(BorrowingUITO lending)
     {
-        await Http.DeleteAsync("http://localhost:5169/lending/delete/" + reader.Id);
+        await Http.DeleteAsync("http://localhost:5169/lending/delete/" + lending.Id);
     }
 }
