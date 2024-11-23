@@ -17,7 +17,7 @@ public class Readers
     public string Address { get; set; }
     
     [Required]
-    [Range(typeof(DateOnly), "1900-01-01", "3000-01-01")] //TODO
+    [Range(typeof(DateOnly), "1900-01-01", "3000-01-01")] 
     public DateOnly BirthDate { get; set; }
     
     

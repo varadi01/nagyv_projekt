@@ -26,6 +26,16 @@ public class LendingService : ILendingService
         //     _logger.LogWarning("This book is already lent");
         //     return; //TODO
         // }
+
+        if (bookId == Guid.Empty || readerId == Guid.Empty)
+        {
+            return;
+        }
+
+        if (lendingDate < returnDate)
+        {
+            return;
+        }
         
         var lending = new Lending {ReaderId = readerId, BookId = bookId,
             LendingDate = lendingDate,  

@@ -19,6 +19,11 @@ public class BookService : IBookService
     public async Task AddBookAsync(string title, string author, string publisher, int year)
     {
         _logger.LogInformation("Adding book {title} to database", title);
+
+        if (title == string.Empty || author == string.Empty || publisher == string.Empty || year < 0)
+        {
+            return;
+        }
         
         var book = new Books {Title = title, Author = author, Publisher = publisher, Year = year};
 

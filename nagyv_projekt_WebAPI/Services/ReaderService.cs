@@ -19,6 +19,11 @@ public class ReaderService : IReaderService
     public async Task AddReaderAsync(string name, string address, DateOnly birthDate)
     {
         _logger.LogInformation($"Adding new reader {name} to database");
+
+        if (name == string.Empty || address == string.Empty)
+        {
+            return;
+        }
         
         var reader = new Readers {Name = name, Address = address, BirthDate = birthDate};
         
