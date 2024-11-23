@@ -16,7 +16,7 @@ public class LendingService : ILendingService
     }
 
 
-    public async Task LendBookAsync(Guid bookId, Guid readerId,DateOnly lendingDate, DateOnly returnDate)
+    public async Task LendBookAsync(Guid bookId, Guid readerId, DateOnly lendingDate, DateOnly returnDate)
     {
         _logger.LogInformation("Adding lending to database");
         _logger.LogInformation($"Book Id: {bookId}, Reader Id: {readerId}");
@@ -43,16 +43,18 @@ public class LendingService : ILendingService
     public async Task<List<Books>> GetLentBooksByReaderIdAsync(Guid readerId)
     {
         var lendings = await _context.Lending.ToListAsync();
-        var booksLentToReader = lendings.Where(l => l.ReaderId == readerId)
+        
+        var booksLentToReader = lendings.Where(l => l.ReaderId.Equals(readerId))
             .Select((l) => l.BookId).ToList();
         
         var books = await _context.Books.ToListAsync();
-
+        
         return books.Where((b) => booksLentToReader.Contains(b.BookID)).ToList();
     }
 
     public async Task<List<Lending>> GetLendingsByReaderIdAsync(Guid readerId)
     {
+        //TODO should only return currently live lendings
         return await _context.Lending.Where(l => l.ReaderId == readerId).ToListAsync();
     }
 

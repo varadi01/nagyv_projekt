@@ -20,7 +20,7 @@
                     <InputText @bind-Value="@_cReader.Address"></InputText>
                     <br/>
                     <label>Birth date</label><br/>
-                    <InputDate  @bind-Value="@_cReader.BirthDate" Min="@_epoch.ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <InputDate  @bind-Value="@_cReader.BirthDate" Min="@_nineteenoo.ToString("yyyy-MM-dd")" ></InputDate> //TODO
                     <br/>
                 </form>
             </BodyTemplate>
@@ -47,6 +47,37 @@
             </FooterTemplate>
         </Modal>
 
+
+        <Modal @ref="viewLentBooksModal" title="Add new book" IsVerticallyCentered="true" Size="ModalSize.Large">
+            <BodyTemplate>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Accession ID</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Year published</th>
+                        <th>Publisher</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var b in _lentBooks)
+                    {
+                        <tr>
+                            <td>@b.BookID</td>
+                            <td>@b.Title</td>
+                            <td>@b.Author</td>
+                            <td>@b.Year</td>
+                            <td>@b.Publisher</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </BodyTemplate>
+            <FooterTemplate>
+                <Button Color="ButtonColor.Secondary" @onclick="OnHideLentBooksModalClick">Close</Button>
+            </FooterTemplate>
+        </Modal>
     </div>
     <div>
         <InputText @bind-Value="@_searchString"></InputText>
@@ -91,14 +122,14 @@
                         <td>@r.BirthDate.ToShortDateString()</td>
                         <td>
                             <Button Color="ButtonColor.Success" @onclick="@((() =>
-                                                                          {
-                                                                              _eReader.ReaderId = r.ReaderId;
-                                                                              _eReader.BirthDate = r.BirthDate;
+                                                                            {
+                                                                                _eReader = r;
+                                                                                _eReader.Lendings = [];
                                                                               OnShowEditModalClick();
                                                                           }))">
                                 Update
                             </Button>
-                            <Button Color="ButtonColor.Info">See borrowed books</Button> //TODO
+                            <Button Color="ButtonColor.Info" @onclick="(() => ShowLentBooks(r.ReaderId))">See borrowed books</Button>
                             <Button Color="ButtonColor.Danger" @onclick="@(() => RemoveReader(r))">Remove</Button>
                         </td>
                     </tr>
@@ -114,12 +145,38 @@
 {
     [Inject] ModalService ModalService { get; set; } = default!;
 
-    private DateTime _epoch = new DateTime( 1900, 1, 1, 0, 0, 0, DateTimeKind.Utc );
+    private DateTime _nineteenoo = new DateTime( 1900, 1, 1, 0, 0, 0, DateTimeKind.Utc );
 
     private string? _searchString = "";
 
     private ReaderUITO _cReader = new ReaderUITO();
     private Modal saveModal = default!;
+
+    private Modal viewLentBooksModal = default!;
+    private List<BookUITO> _lentBooks = new List<BookUITO>();
+    
+    private class BookUITO
+    {
+        public Guid BookID { get; set; }
+
+        public string Title { get; set; }
+
+        public string Author { get; set; }
+
+        public string Publisher { get; set; }
+
+        public int Year { get; set; }
+    }
+    
+    private async Task OnShowLentBooksModalClick()
+    {
+        await viewLentBooksModal.ShowAsync();
+    }
+
+    private async Task OnHideLentBooksModalClick()
+    {
+        await viewLentBooksModal.HideAsync();
+    }
 
     private async Task OnShowModalClick()
     {
@@ -139,8 +196,8 @@
         public string Name { get; set; }
         
         public string Address { get; set; }
-        
-        public DateOnly BirthDate { get; set; }
+
+        public DateOnly BirthDate { get; set; } = DateOnly.FromDateTime(new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         public ICollection<Borrowings.BorrowingUITO> Lendings { get; set; } = new List<Borrowings.BorrowingUITO>(); //temporary?
     }
@@ -173,6 +230,12 @@
     }
 
     private List<ReaderUITO>? readers = new();
+
+    private async void ShowLentBooks(Guid rid)
+    {
+        _lentBooks = await Http.GetFromJsonAsync<List<BookUITO>>("http://localhost:5169/lending/getLent/" + rid);
+        await OnShowLentBooksModalClick();
+    }
     
     private async void fetchReaders()
     {

@@ -57,6 +57,26 @@
             </FooterTemplate>
         </Modal>
 
+        <Modal @ref="lendBookModal" title="Add new book" IsVerticallyCentered="true">
+            <BodyTemplate>
+                <form>
+                    <label>Reader ID</label><br/>
+                    <InputText @bind-Value="@_readerGuidString"></InputText>
+                    <br/>
+                    <label>Lending date</label><br/>
+                    <InputDate  @bind-Value="@_cBorrowing.LendingDate" Min="@DateTime.UtcNow.ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <br/>
+                    <label>Return date</label><br/>
+                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <br/>
+                </form>
+            </BodyTemplate>
+            <FooterTemplate>
+                <Button Color="ButtonColor.Secondary" @onclick="OnHideLendBookModalClick">Close</Button>
+                <Button Color="ButtonColor.Primary" @onclick="SaveLending">Save</Button>
+            </FooterTemplate>
+        </Modal>
+
     </div>
     <div>
         <InputText @bind-Value="@_searchString"></InputText>
@@ -120,13 +140,17 @@
                         <td>@b.Publisher</td>
                         <td>
                             <Button Color="ButtonColor.Success" @onclick="@((() =>
-                                                                          {
-                                                                              _eBook.BookID = b.BookID;
+                                                                            {
+                                                                                _eBook = b;
                                                                               OnShowEditModalClick();
                                                                           }))">
                                 Edit
                             </Button>
-                            <Button Color="ButtonColor.Info">Lend</Button> //TODO
+                            <Button Color="ButtonColor.Info" @onclick="@(() =>
+                                                {
+                                                    _cBorrowing.BookId = b.BookID;
+                                                    OnShowLendBookModalClick();
+                                                })">Lend</Button>
                             <Button Color="ButtonColor.Danger" @onclick="@(() => RemoveBook(b))">Remove</Button>
                         </td>
                     </tr>
@@ -151,11 +175,49 @@
         PUBLISHER
     }
 
+    private BorrowingUITO _cBorrowing = new BorrowingUITO();
+    private string? _readerGuidString;
+        
+    public class BorrowingUITO
+    {
+        public Guid Id {get; set;}
+
+        public Guid ReaderId {get; set;}
+
+        public Guid BookId {get; set;}
+
+        public DateOnly LendingDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
+        
+        public DateOnly ReturnDate {get; set;}  = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7));
+    }
+    
+    private async void SaveLending()
+    {
+        Guid.TryParse(_readerGuidString, out var rid);
+        _cBorrowing.ReaderId = rid;
+
+        if (_cBorrowing.ReturnDate <= _cBorrowing.LendingDate)
+        {
+            //cant be returned before lent
+            return;
+        }
+
+        if (_cBorrowing.BookId == Guid.Empty || _cBorrowing.ReaderId == Guid.Empty)
+        {
+            return;
+        }
+
+        await Http.PostAsJsonAsync("http://localhost:5169/lending/lend", _cBorrowing);
+        await OnHideLendBookModalClick();
+    }
+
     private string? _searchString = "";
     private FilterMode _filterMode = FilterMode.NONE;
 
     private BookUITO _cBook = new BookUITO();
     private Modal saveModal = default!;
+
+    private Modal lendBookModal = default!;
 
     private async Task OnShowModalClick()
     {
@@ -165,6 +227,16 @@
     private async Task OnHideModalClick()
     {
         await saveModal.HideAsync();
+    }
+    
+    private async Task OnShowLendBookModalClick()
+    {
+        await lendBookModal.ShowAsync();
+    }
+
+    private async Task OnHideLendBookModalClick()
+    {
+        await lendBookModal.HideAsync();
     }
 
     private class BookUITO

@@ -20,10 +20,10 @@
                     <InputText @bind-Value="@_bookGuidString"></InputText>
                     <br/>
                     <label>Lending date</label><br/>
-                    <InputDate  @bind-Value="@_cBorrowing.LendingDate" Min="@DateTime.UtcNow.ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <InputDate  @bind-Value="@_cBorrowing.LendingDate" Min="@DateTime.UtcNow.ToString("yyyy-MM-dd")" ></InputDate>
                     <br/>
                     <label>Return date</label><br/>
-                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd")" ></InputDate> 
                     <br/>
                 </form>
             </BodyTemplate>
@@ -36,7 +36,7 @@
             <BodyTemplate>
                 <form>
                     <label>Return date</label><br/>
-                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@_eBorrowing.LendingDate.ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@_eBorrowing.LendingDate.ToString("yyyy-MM-dd")" ></InputDate>
                     <br/>
                 </form>
             </BodyTemplate>
@@ -100,7 +100,6 @@
         }
     </div>
 </div>
-
 @code
 
 {
@@ -145,7 +144,7 @@
         Guid.TryParse(_readerGuidString, out var rid);
         _cBorrowing.ReaderId = rid;
 
-        Guid.TryParse(_readerGuidString, out var bid);
+        Guid.TryParse(_bookGuidString, out var bid);
         _cBorrowing.BookId = bid;
 
         if (_cBorrowing.ReturnDate <= _cBorrowing.LendingDate)
