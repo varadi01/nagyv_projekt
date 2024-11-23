@@ -7,8 +7,7 @@
 <PageTitle>Lendings</PageTitle>
 
 <h1>Manage lendings</h1>
-//3fa85f64-5717-4562-b3fc-2c963f66afa6 01935059-7179-7af4-8f88-a912c7d01878
-<div>
+<div>    
     <div>
         <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">Add new lending</Button>
         <Modal @ref="saveModal" title="Add new reader" IsVerticallyCentered="true">
@@ -21,10 +20,10 @@
                     <InputText @bind-Value="@_bookGuidString"></InputText>
                     <br/>
                     <label>Lending date</label><br/>
-                    <InputDate  @bind-Value="@_cBorrowing.LendingDate" Min="@_epoch.ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <InputDate  @bind-Value="@_cBorrowing.LendingDate" Min="@DateTime.UtcNow.ToString("yyyy-MM-dd")" ></InputDate> //TODO
                     <br/>
                     <label>Return date</label><br/>
-                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@_epoch.ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd")" ></InputDate> //TODO
                     <br/>
                 </form>
             </BodyTemplate>
@@ -37,7 +36,7 @@
             <BodyTemplate>
                 <form>
                     <label>Return date</label><br/>
-                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@_epoch.ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@_eBorrowing.LendingDate.ToString("yyyy-MM-dd")" ></InputDate> //TODO
                     <br/>
                 </form>
             </BodyTemplate>
@@ -86,9 +85,8 @@
                         <td>@b.LendingDate.ToShortDateString()</td>
                         <td>@b.ReturnDate.ToShortDateString()</td>
                         <td>
-                            <Button Color="ButtonColor.Success" @onclick="@((() =>
-                                                                          {
-                                                                              _eBorrowing.Id = b.Id;
+                            <Button Color="ButtonColor.Success" @onclick="@((() => {
+                                                                                _eBorrowing = b;
                                                                               OnShowEditModalClick();
                                                                           }))">
                                 Update
@@ -108,7 +106,7 @@
 {
     [Inject] ModalService ModalService { get; set; } = default!;
 
-    private DateTime _epoch = new DateTime( 1900, 1, 1, 0, 0, 0, DateTimeKind.Utc );
+    private DateTime _nineteenoo = new DateTime( 1900, 1, 1, 0, 0, 0, DateTimeKind.Utc );
 
     private string? _searchString = "";
 
@@ -137,9 +135,9 @@
 
         public Guid BookId {get; set;}
 
-        public DateOnly LendingDate {get; set;}
+        public DateOnly LendingDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
         
-        public DateOnly ReturnDate {get; set;}
+        public DateOnly ReturnDate {get; set;}  = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7));
     }
 
     private async void SaveLending()
@@ -149,6 +147,17 @@
 
         Guid.TryParse(_readerGuidString, out var bid);
         _cBorrowing.BookId = bid;
+
+        if (_cBorrowing.ReturnDate <= _cBorrowing.LendingDate)
+        {
+            //cant be returned before lent
+            return;
+        }
+
+        if (_cBorrowing.BookId == Guid.Empty || _cBorrowing.ReaderId == Guid.Empty)
+        {
+            return;
+        }
 
         await Http.PostAsJsonAsync("http://localhost:5169/lending/lend", _cBorrowing);
         await OnHideModalClick();
@@ -169,7 +178,6 @@
 
     private async void EditLending()
     {
-        //TODO resets to 0001 for some reason
         await Http.PutAsJsonAsync("http://localhost:5169/lending/update", _eBorrowing);
         await OnHideEditModalClick();
     }

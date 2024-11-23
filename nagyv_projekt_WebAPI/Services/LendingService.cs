@@ -16,18 +16,19 @@ public class LendingService : ILendingService
     }
 
 
-    public async Task LendBookAsync(Guid bookId, Guid readerId, DateOnly returnDate)
+    public async Task LendBookAsync(Guid bookId, Guid readerId,DateOnly lendingDate, DateOnly returnDate)
     {
         _logger.LogInformation("Adding lending to database");
+        _logger.LogInformation($"Book Id: {bookId}, Reader Id: {readerId}");
 
-        if (IsBookLent(bookId))
-        {
-            _logger.LogWarning("This book is already lent");
-            return; //TODO
-        }
+        // if (await IsBookLent(bookId, lendingDate))
+        // {
+        //     _logger.LogWarning("This book is already lent");
+        //     return; //TODO
+        // }
         
         var lending = new Lending {ReaderId = readerId, BookId = bookId,
-            LendingDate = DateOnly.FromDateTime(DateTime.UtcNow),  //TODO, we specify this
+            LendingDate = lendingDate,  
             ReturnDate = returnDate};
         
         await _context.Lending.AddAsync(lending);
@@ -50,9 +51,14 @@ public class LendingService : ILendingService
         return books.Where((b) => booksLentToReader.Contains(b.BookID)).ToList();
     }
 
+    public async Task<List<Lending>> GetLendingsByReaderIdAsync(Guid readerId)
+    {
+        return await _context.Lending.Where(l => l.ReaderId == readerId).ToListAsync();
+    }
+
     public async Task UpdateLendingAsync(Lending lending)
     {
-        _logger.LogInformation($"Updating lending {lending.Id} in database");
+        _logger.LogInformation($"Updating lending {lending.Id} in database, new return date: {lending.ReturnDate}");
         
         var lendingToUpdate = await _context.Lending.FindAsync(lending.Id);
 
@@ -83,9 +89,13 @@ public class LendingService : ILendingService
         await _context.SaveChangesAsync();
     }
 
-    private bool IsBookLent(Guid bookId)
+    private async Task<bool> IsBookLent(Guid bookId, DateOnly lendingDate)
     {
-        return _context.Lending.Any(l => l.BookId == bookId &&
-                                         l.ReturnDate > DateOnly.FromDateTime(DateTime.UtcNow));
+        //TODO gets existing lendings whatever i do
+        _logger.LogInformation($"Checking if {bookId} lending is lent on {lendingDate}");
+        var v = await _context.Lending.Where((l) => l.BookId.Equals(bookId) && l.ReturnDate.CompareTo(lendingDate) > 0)
+            .ToListAsync();
+        _logger.LogInformation($"Found {v.Count} lendings : {v[0]}");
+        return v.Count > 0;
     }
 }

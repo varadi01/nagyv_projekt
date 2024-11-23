@@ -19,7 +19,7 @@ public class LendingController : ControllerBase
     [Route("lend")]
     public async Task<IActionResult> RegisterLending([FromBody] Lending lending)
     {
-        await _lendingService.LendBookAsync(lending.BookId, lending.ReaderId, lending.ReturnDate);
+        await _lendingService.LendBookAsync(lending.BookId, lending.ReaderId, lending.LendingDate, lending.ReturnDate);
         return Ok();
     }
 
@@ -33,6 +33,12 @@ public class LendingController : ControllerBase
     public async Task<IActionResult> GetLendingsByReaderId(Guid id)
     {
         //does not matter whether the reader exists!
+        return Ok(await _lendingService.GetLendingsByReaderIdAsync(id));
+    }
+
+    [HttpGet("getLent/{id:guid}")]
+    public async Task<IActionResult> GetLentBooksByReaderId(Guid id)
+    {
         return Ok(await _lendingService.GetLentBooksByReaderIdAsync(id));
     }
 

@@ -4,9 +4,11 @@ namespace nagyv_projekt.Services;
 
 public interface ILendingService
 {
-    Task LendBookAsync(Guid bookId, Guid readerId, DateOnly returnDate);
+    Task LendBookAsync(Guid bookId, Guid readerId,DateOnly lendingDate, DateOnly returnDate);
     
     Task<List<Lending>> GetLendingsAsync();
+
+    Task<List<Lending>> GetLendingsByReaderIdAsync(Guid readerId);
     
     Task<List<Books>> GetLentBooksByReaderIdAsync(Guid readerId);
     
