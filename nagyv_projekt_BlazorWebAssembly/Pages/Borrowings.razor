@@ -36,12 +36,12 @@
             <BodyTemplate>
                 <form>
                     <label>Return date</label><br/>
-                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@_eBorrowing.LendingDate.ToString("yyyy-MM-dd")" ></InputDate>
+                    <InputDate  @bind-Value="@_eBorrowing.ReturnDate" Min="@_eBorrowing.LendingDate.ToString("yyyy-MM-dd")" ></InputDate>
                     <br/>
                 </form>
             </BodyTemplate>
             <FooterTemplate>
-                <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                <Button Color="ButtonColor.Secondary" @onclick="OnHideEditModalClick">Close</Button>
                 <Button Color="ButtonColor.Primary" @onclick="EditLending">Update</Button>
             </FooterTemplate>
         </Modal>
@@ -85,8 +85,9 @@
                         <td>@b.LendingDate.ToShortDateString()</td>
                         <td>@b.ReturnDate.ToShortDateString()</td>
                         <td>
-                            <Button Color="ButtonColor.Success" @onclick="@((() => {
-                                                                                _eBorrowing = b;
+                            <Button Color="ButtonColor.Success" @onclick="@((() =>
+                                                                        {
+                                                                        _eBorrowing = b;
                                                                               OnShowEditModalClick();
                                                                           }))">
                                 Update
