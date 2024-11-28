@@ -20,7 +20,7 @@ public class ReaderService : IReaderService
     {
         _logger.LogInformation($"Adding new reader {name} to database");
 
-        if (name == string.Empty || address == string.Empty)
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(address) || birthDate.Year < 1900)
         {
             return;
         }
@@ -57,6 +57,11 @@ public class ReaderService : IReaderService
         if (existingReader == null)
         {
             throw new InvalidOperationException(); //TODO EX
+        }
+        
+        if (string.IsNullOrWhiteSpace(reader.Name) || string.IsNullOrWhiteSpace(reader.Address))
+        {
+            return;
         }
         
         existingReader.Name = reader.Name;

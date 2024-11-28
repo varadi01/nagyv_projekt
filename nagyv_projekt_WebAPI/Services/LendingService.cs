@@ -32,7 +32,7 @@ public class LendingService : ILendingService
             return;
         }
 
-        if (lendingDate < returnDate)
+        if (lendingDate > returnDate)
         {
             return;
         }
@@ -78,6 +78,11 @@ public class LendingService : ILendingService
         {
             _logger.LogWarning($"Could not find lending with id {lending.Id}");
             throw new InvalidOperationException($"Lending with id {lending.Id} was not found");
+        }
+
+        if (lending.ReturnDate < lending.LendingDate)
+        {
+            return;
         }
         
         lendingToUpdate.ReturnDate = lending.ReturnDate;

@@ -20,7 +20,7 @@ public class BookService : IBookService
     {
         _logger.LogInformation("Adding book {title} to database", title);
 
-        if (title == string.Empty || author == string.Empty || publisher == string.Empty || year < 0)
+        if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(author) || string.IsNullOrWhiteSpace(publisher) || year < 0)
         {
             return;
         }
@@ -76,6 +76,12 @@ public class BookService : IBookService
         if (existingBook == null)
         {
             throw new InvalidOperationException(); //TODO
+        }
+        
+        if (string.IsNullOrWhiteSpace(book.Title) || string.IsNullOrWhiteSpace(book.Author) ||
+            string.IsNullOrWhiteSpace(book.Publisher) || book.Year < 0)
+        {
+            return;
         }
         
         existingBook.Title = book.Title;
