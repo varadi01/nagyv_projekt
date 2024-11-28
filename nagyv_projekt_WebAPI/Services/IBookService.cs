@@ -18,7 +18,7 @@ public interface IBookService
     
     Task<List<Books>> GetBooksByYearAsync(int year);
     
-    Task UpdateBookAsync(Books book); //TODO ?
+    Task UpdateBookAsync(Books book);
     
     Task DeleteBookAsync(Guid id);
 }

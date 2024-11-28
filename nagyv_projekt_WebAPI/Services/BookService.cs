@@ -75,7 +75,7 @@ public class BookService : IBookService
 
         if (existingBook == null)
         {
-            throw new InvalidOperationException(); //TODO
+            throw new InvalidOperationException(); 
         }
         
         if (string.IsNullOrWhiteSpace(book.Title) || string.IsNullOrWhiteSpace(book.Author) ||
@@ -100,7 +100,7 @@ public class BookService : IBookService
 
         if (book == null)
         {
-            throw new InvalidOperationException(); //TODO
+            throw new InvalidOperationException(); 
         }
         
         _context.Books.Remove(book);

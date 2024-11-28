@@ -12,7 +12,7 @@ public interface ILendingService
     
     Task<List<Books>> GetLentBooksByReaderIdAsync(Guid readerId);
     
-    Task UpdateLendingAsync(Lending lending); //TODO ?
+    Task UpdateLendingAsync(Lending lending);
     
     Task DeleteLendingAsync(Guid lendingId);
 }

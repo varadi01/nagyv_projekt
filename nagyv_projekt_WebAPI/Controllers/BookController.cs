@@ -54,7 +54,6 @@ public class BookController : ControllerBase
     [HttpGet("getById/{id:guid}")]
     public async Task<IActionResult> GetBookById(Guid id)
     {
-        //TODO if it doesent exist we crash
         var book = await _bookService.GetBookByIdAsync(id);
         return book == null ? NotFound() : Ok(book);
     }

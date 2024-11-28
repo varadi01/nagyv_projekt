@@ -44,10 +44,9 @@ public class ReaderService : IReaderService
 
     public async Task<Readers> GetReaderByIdAsync(Guid id)
     {
-        return await _appDbContext.Readers.FindAsync(id); //TODO EXCEPTION
+        return await _appDbContext.Readers.FindAsync(id) ?? throw new InvalidOperationException(); 
     }
-
-    //TODO maybe make this just one method?
+    
     public async Task UpdateReaderAsync(Readers reader)
     {
         _logger.LogInformation($"Updating reader {reader.ReaderId}");
@@ -56,7 +55,7 @@ public class ReaderService : IReaderService
 
         if (existingReader == null)
         {
-            throw new InvalidOperationException(); //TODO EX
+            throw new InvalidOperationException(); 
         }
         
         if (string.IsNullOrWhiteSpace(reader.Name) || string.IsNullOrWhiteSpace(reader.Address))

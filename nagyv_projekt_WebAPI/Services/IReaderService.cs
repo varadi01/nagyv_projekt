@@ -10,7 +10,7 @@ public interface IReaderService
     
     Task<List<Readers>> GetAllReadersByNameAsync(string name);
     
-    Task<Readers> GetReaderByIdAsync(Guid id); //TODO ?
+    Task<Readers> GetReaderByIdAsync(Guid id);
     
     Task UpdateReaderAsync(Readers reader);
     

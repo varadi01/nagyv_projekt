@@ -17,9 +17,9 @@ public class Lending
     [Required]
     public Guid BookId {get; set;}
     
-    [Required] //TODO
+    [Required] 
     public DateOnly LendingDate {get; set;}
     
-    [Required] //TODO
+    [Required] 
     public DateOnly ReturnDate {get; set;}
 }

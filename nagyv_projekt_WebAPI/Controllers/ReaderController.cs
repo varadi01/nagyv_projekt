@@ -48,7 +48,6 @@ public class ReaderController : ControllerBase
     [HttpGet("getById/{id}")]
     public async Task<IActionResult> GetReaderById(Guid id)
     {
-        //TODO crashes if doesent exist
         var reader = await _readerService.GetReaderByIdAsync(id);
         return reader == null ? NotFound() : Ok(reader);
     }

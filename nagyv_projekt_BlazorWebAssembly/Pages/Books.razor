@@ -64,10 +64,10 @@
                     <InputText @bind-Value="@_readerGuidString"></InputText>
                     <br/>
                     <label>Lending date</label><br/>
-                    <InputDate  @bind-Value="@_cBorrowing.LendingDate" Min="@DateTime.UtcNow.ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <InputDate  @bind-Value="@_cBorrowing.LendingDate" Min="@DateTime.UtcNow.ToString("yyyy-MM-dd")" ></InputDate>
                     <br/>
                     <label>Return date</label><br/>
-                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd")" ></InputDate> //TODO
+                    <InputDate  @bind-Value="@_cBorrowing.ReturnDate" Min="@DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd")" ></InputDate>
                     <br/>
                 </form>
             </BodyTemplate>
